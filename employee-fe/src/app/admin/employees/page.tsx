@@ -44,6 +44,7 @@ import {
   useDeleteEmployeeMutation,
 } from "@/store/api/employee-api";
 import { toast } from "sonner";
+import Papa from "papaparse";
 
 const convertToRupiah = (num: number) => {
   return "Rp." + Number(num)
@@ -51,7 +52,6 @@ const convertToRupiah = (num: number) => {
     .replace(/\d(?=(\d{3})+\.)/g, "$&.")
     .replace(".", ",");
 };
-
 
 export default function Page() {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -73,6 +73,8 @@ export default function Page() {
 
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(5);
+
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     refetch();
@@ -118,6 +120,47 @@ export default function Page() {
       toast.error("Gagal submit form / sesi telah berakhir");
       setDialogOpen(false);
     }
+  };
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("Importing CSV...");
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+
+    Papa.parse<CreateEmployeeRequest>(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results: any) => {
+        try {
+          for (const row of results.data) {
+            const data: CreateEmployeeRequest = {
+              name: row.name,
+              age: Number(row.age),
+              position: row.position,
+              salary: Number(row.salary),
+            };
+            await createEmployee(data).unwrap();
+          }
+          toast.success("Import CSV berhasil");
+          refetch();
+        } catch (err) {
+          console.error(err);
+          toast.error("Gagal import CSV");
+        } finally {
+          setImporting(false);
+        }
+      },
+      error: (err: any) => {
+        console.error(err);
+        toast.error("Gagal membaca file CSV");
+        setImporting(false);
+      },
+    });
+
+    event.target.value = "";
   };
 
   const columns: ColumnDef<Employee>[] = [
@@ -210,10 +253,32 @@ export default function Page() {
   return (
     <DashboardLayout title="Manajemen Karyawan">
       <div className="bg-white dark:bg-muted/50 rounded-md shadow px-4">
-        {/* Header + Search + Add */}
-        <div className="md:flex justify-between items-center py-4">
-          <Input placeholder="Search..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="w-full md:w-48" />
-          <Button onClick={handleAdd} className="cursor-pointer">Tambah Karyawan</Button>
+        <div className="md:flex justify-between items-center py-4 gap-2">
+          <Input
+            placeholder="Search..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="w-full md:w-48"
+          />
+          <div className="mt-2 md:mt-0 flex gap-2">
+            <Button
+              className="cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+            >
+              {importing ? "Importing..." : "Import CSV"}
+            </Button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv"
+              onChange={handleImportCSV}
+              className="hidden"
+            />
+
+            <Button onClick={handleAdd}>Tambah Karyawan</Button>
+          </div>
         </div>
 
         {/* Table */}
