@@ -1,14 +1,11 @@
 "use client"
 
 import * as React from "react";
-import Link from "next/link";
 import {
   Settings2,
-  ClipboardCheckIcon,
   Users,
   School,
-  LayoutDashboard,
-  CalendarCog
+  LayoutDashboard
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -44,24 +41,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         items: [],
       },
       {
-        title: "Manajemen Siswa",
-        url: ROUTES.ADMIN.SISWA,
+        title: "Karyawan",
+        url: ROUTES.ADMIN.EMPLOYEES,
         icon: Users,
-        items: [],
-      },
-      {
-        title: "Manajemen Presensi",
-        url: "#",
-        icon: ClipboardCheckIcon,
-        items: [
-          { title: "Presensi Hari Ini", url: ROUTES.ADMIN.PRESENSI_HARIAN },
-          { title: "Rekap Presensi", url: ROUTES.ADMIN.REKAP_PRESENSI },
-        ],
-      },
-      {
-        title: "Jadwal Libur",
-        url: ROUTES.ADMIN.LIBUR_JADWAL,
-        icon: CalendarCog,
         items: [],
       },
       {
@@ -79,12 +61,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="https://kaldemik.com">
+              <a href="">
                 <div className="bg-sidebar-primary dark:text-white text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <School className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="text-md font-bold">Kelola Akademik</span>
+                  <span className="text-md font-bold">Manajemen Karyawan</span>
                 </div>
               </a>
             </SidebarMenuButton>

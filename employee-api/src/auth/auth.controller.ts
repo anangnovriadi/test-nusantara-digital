@@ -15,7 +15,9 @@ export class AuthController {
     description: 'Login successful',
     schema: {
       example: {
-        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        data: {
+          access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        }
       },
     },
   })

@@ -2,19 +2,13 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import authSlice from './auth-slice';
 import { authApi } from './api/auth-api';
 import { settingApi } from './api/setting-api';
-import { studentApi } from './api/student-api';
-import { attendanceApi } from './api/attendance-api';
-import { holidayApi } from './api/holiday-api';
-import { homepageApi } from './api/homepage-api';
+import { employeeApi } from './api/employee-api';
 
 const rootReducer = combineReducers({
     auth: authSlice,
     [authApi.reducerPath]: authApi.reducer,
     [settingApi.reducerPath]: settingApi.reducer,
-    [studentApi.reducerPath]: studentApi.reducer,
-    [attendanceApi.reducerPath]: attendanceApi.reducer,
-    [holidayApi.reducerPath]: holidayApi.reducer,
-    [homepageApi.reducerPath]: homepageApi.reducer,
+    [employeeApi.reducerPath]: employeeApi.reducer,
 });
 
 const store = configureStore({
@@ -22,11 +16,8 @@ const store = configureStore({
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat([
             authApi.middleware,
-            studentApi.middleware,
+            employeeApi.middleware,
             settingApi.middleware,
-            attendanceApi.middleware,
-            homepageApi.middleware,
-            holidayApi.middleware,
         ]),
 });
 

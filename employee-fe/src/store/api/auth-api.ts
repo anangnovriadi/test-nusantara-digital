@@ -12,7 +12,7 @@ export interface RegisterCredentials {
     password: string;
 }
 
-export interface LoginResponse extends ApiResponse<{ token: string }> {}
+export interface LoginResponse extends ApiResponse<{ access_token: string }> {}
 export interface RegisterResponse extends ApiResponse<{ email: string }> {}
 
 export const authApi = createApi({
@@ -26,14 +26,7 @@ export const authApi = createApi({
                 body: credentials,
             }),
         }),
-        register: builder.mutation<RegisterResponse, RegisterCredentials>({
-            query: (credentials) => ({
-                url: '/auth/register',
-                method: 'POST',
-                body: credentials,
-            }),
-        }),
     }),
 });
 
-export const { useLoginMutation, useRegisterMutation } = authApi;
+export const { useLoginMutation } = authApi;

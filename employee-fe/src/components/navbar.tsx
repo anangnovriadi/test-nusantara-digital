@@ -25,22 +25,10 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 w-full border-b bg-background backdrop-blur-sm">
       <div className="max-w-auto mx-auto flex items-center justify-between px-6 py-3">
         {/* Logo */}
-        <a href="https://kaldemik.com" className="text-lg flex gap-2 items-center font-bold hover:opacity-80">
+        <a href="" className="text-lg flex gap-2 items-center font-bold hover:opacity-80">
           <School />
-          <span className="text-sm">Kelola Akademik</span>
+          <span className="text-sm">Manajemen Karyawan</span>
         </a>
-
-        {/* Desktop Menu */}
-        <div className="hidden md:flex text-sm font-medium gap-1.5">
-          <Link
-            href="/"
-            className={`hover:bg-gray-100 px-4 py-1.5 rounded-md transition-colors dark:hover:text-black ${
-              isActive("/") ? "bg-gray-100 dark:text-black" : ""
-            }`}
-          >
-            Presensi
-          </Link>
-        </div>
 
         {/* Right Buttons */}
         <div className="flex items-center gap-2.5 md:gap-2">
@@ -67,15 +55,6 @@ export default function Navbar() {
       {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden border-t text-center">
-          <Link
-            href="/"
-            className={`block text-sm hover:text-blue-500 border-b p-2 transition-colors ${
-              isActive("/") ? "text-blue-500" : ""
-            }`}
-            onClick={() => setIsOpen(false)}
-          >
-            Presensi
-          </Link>
           <a
             href="/admin"
             className={`block text-sm hover:text-blue-500 p-2 transition-colors ${

@@ -97,14 +97,6 @@ const LoginForm: FC<Props> = ({ onSubmit, isLoading }) => {
                 <Button disabled={isLoading} className="cursor-pointer">
                   {isLoading ? <Loader2 className="animate-spin size-5" /> : 'Login'}
                 </Button>
-                <div className="text-center">
-                  <p className="text-sm">
-                    Belum punya akun?{' '}
-                    <Link href="/register" className="text-primary font-medium underline underline-offset-4">
-                      Daftar di sini
-                    </Link>
-                  </p>
-                </div>
               </div>
             </div>
           </form>

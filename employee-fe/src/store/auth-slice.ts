@@ -20,11 +20,11 @@ const authSlice = createSlice({
   reducers: {
     setToken(state, action) {
       state.token = action.payload;
-      Cookies.set(COOKIE_KEYS.AUTH_TOKEN, action.payload, { expires: 7 });
+      Cookies.set(COOKIE_KEYS.AUTH_TOKEN, action.payload, { expires: 1 });
     },
     setUserInfo(state, action) {
       state.user = action.payload;
-      Cookies.set(COOKIE_KEYS.USER_INFO, JSON.stringify(action.payload), { expires: 7 });
+      Cookies.set(COOKIE_KEYS.USER_INFO, JSON.stringify(action.payload), { expires: 1 });
     },
     clearToken(state) {
       state.token = null;

@@ -5,29 +5,11 @@ import { baseQuery } from './base-query';
 export interface SearchParams {}
 export interface Setting {
     id: number;
-    school_name: string;
     fullname: string;
-    nip: string;
-    principal_name: string;
-    principal_nip: string;
-    school_year: string;
-    level_of_education: string;
-    about: string;
-    address: string;
-    created_at: string;
-    updated_at: string;
 }
 
 export interface UpdateSettingRequest {
-    school_name: string;
     fullname: string;
-    nip: string;
-    principal_name: string;
-    principal_nip: string;
-    school_year: string;
-    level_of_education: string;
-    about?: string;
-    address?: string;
 }
 
 export interface GetSettingDetailResponse extends ApiResponse<{ data: Setting }> {}

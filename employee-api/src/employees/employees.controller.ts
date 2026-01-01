@@ -33,18 +33,21 @@ export class EmployeesController {
     description: 'Employee successfully created',
     schema: {
       example: {
-        id: 'uuid',
-        name: 'Alex Santoso',
-        age: 30,
-        position: 'Sales Executive',
-        salary: '15000000.00',
-        created_at: '2025-01-01T10:00:00Z',
-        updated_at: '2025-01-01T10:00:00Z',
+        data: {
+          id: 'uuid',
+          name: 'Alex Santoso',
+          age: 30,
+          position: 'Sales Executive',
+          salary: '15000000.00',
+          created_at: '2025-01-01T10:00:00Z',
+          updated_at: '2025-01-01T10:00:00Z',
+        },
       },
     },
   })
-  create(@Body() body: CreateEmployeeDto) {
-    return this.service.create(body);
+  async create(@Body() body: CreateEmployeeDto) {
+    const employee = await this.service.create(body);
+    return { data: employee };
   }
 
   @Get()
@@ -52,19 +55,26 @@ export class EmployeesController {
     status: 200,
     description: 'Retrieve employee list',
     schema: {
-      example: [
-        {
-          id: 'uuid',
-          name: 'Alex Santoso',
-          age: 30,
-          position: 'Sales Executive',
-          salary: '15000000.00',
-        },
-      ],
+      example: {
+        data: [
+          {
+            id: 'uuid',
+            name: 'Alex Santoso',
+            age: 30,
+            position: 'Sales Executive',
+            salary: '15000000.00',
+          },
+        ],
+        total: 1
+      },
     },
   })
-  findAll() {
-    return this.service.findAll();
+  async findAll() {
+    const employees = await this.service.findAll();
+    return {
+      data: employees,
+      total: employees.length,
+    };
   }
 
   @Get(':id')
@@ -73,16 +83,19 @@ export class EmployeesController {
     description: 'Retrieve employee detail',
     schema: {
       example: {
-        id: 'uuid',
-        name: 'Alex Santoso',
-        age: 30,
-        position: 'Sales Executive',
-        salary: '15000000.00',
+        data: {
+          id: 'uuid',
+          name: 'Alex Santoso',
+          age: 30,
+          position: 'Sales Executive',
+          salary: '15000000.00',
+        },
       },
     },
   })
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(id);
+  async findOne(@Param('id') id: string) {
+    const employee = await this.service.findOne(id);
+    return { data: employee };
   }
 
   @Put(':id')
@@ -90,17 +103,25 @@ export class EmployeesController {
   @ApiResponse({
     status: 200,
     description: 'Employee successfully updated',
+    schema: {
+      example: { data: { message: 'Employee updated successfully' } },
+    },
   })
-  update(@Param('id') id: string, @Body() body: UpdateEmployeeDto) {
-    return this.service.update(id, body);
+  async update(@Param('id') id: string, @Body() body: UpdateEmployeeDto) {
+    await this.service.update(id, body);
+    return { data: { message: 'Employee updated successfully' } };
   }
 
   @Delete(':id')
   @ApiResponse({
     status: 200,
     description: 'Employee successfully deleted',
+    schema: {
+      example: { data: { message: 'Employee deleted successfully' } },
+    },
   })
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.service.remove(id);
+    return { data: { message: 'Employee deleted successfully' } };
   }
 }

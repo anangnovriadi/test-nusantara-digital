@@ -44,14 +44,8 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
             </Breadcrumb>
           </div>
           <div className="flex gap-2 px-4">
-            <Link href="/">
-              <Button variant="outline" className="w-full cursor-pointer">
-                Presensi
-              </Button> 
-            </Link>
             <ModeToggle />
           </div>
-          
         </header>
 
         <main className="flex flex-1 flex-col gap-4 p-4 pt-4">
