@@ -46,12 +46,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: Users,
         items: [],
       },
-      {
-        title: "Settings",
-        url: ROUTES.ADMIN.SETTINGS,
-        icon: Settings2,
-        items: []
-      },
     ],
   }
 
