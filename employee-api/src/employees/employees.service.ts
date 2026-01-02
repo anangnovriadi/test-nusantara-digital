@@ -22,7 +22,11 @@ export class EmployeesService {
   }
 
   findAll() {
-    return this.repo.find();
+    return this.repo.find({
+      order: {
+        created_at: 'DESC',
+      },
+    });
   }
 
   findOne(id: string) {
