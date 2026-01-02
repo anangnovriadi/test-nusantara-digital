@@ -96,8 +96,8 @@ export default function Page() {
   useEffect(() => {
     if (isCompleted && importJobId) {
       console.log('[Page] ✅ Import completed, showing success message');
-      refetch(); // Refetch data first
-      toast.success("Import CSV berhasil! Data terbaru telah dimuat.");
+      refetch(); // Refetch data (async)
+      toast.success("Import CSV berhasil! Sedang memuat data terbaru...");
 
       // Reset state after a short delay
       setTimeout(() => {
