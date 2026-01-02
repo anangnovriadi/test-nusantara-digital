@@ -19,104 +19,133 @@ export class EmployeeProcessor {
     console.log('[Processor] 🚀 Starting import job:', jobId);
     console.log('[Processor] File path:', path);
 
-    // Emit 0% progress immediately to signal job has started
-    this.gateway.emitProgress(jobId, 0);
-    console.log('[Processor] 📡 Emitted initial 0% progress');
+    try {
+      // Emit 0% progress immediately to signal job has started
+      this.gateway.emitProgress(jobId, 0);
+      console.log('[Processor] 📡 Emitted initial 0% progress');
 
-    // Small delay to ensure frontend WebSocket connection is established
-    await new Promise(resolve => setTimeout(resolve, 500));
+      // Small delay to ensure frontend WebSocket connection is established
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-    let totalRows = 0;
-    let processed = 0;
-    const batch: any[] = [];
-    const BATCH_SIZE = 100;
+      let processed = 0;
+      const batch: any[] = [];
+      const BATCH_SIZE = 50; // Reduced for low-RAM environments
+      let lastProgressEmit = Date.now();
+      const PROGRESS_EMIT_INTERVAL = 1000; // Emit progress max every 1 second
 
-    // First pass: count total rows for accurate progress
-    console.log('[Processor] 📊 Counting total rows...');
-    await new Promise<void>((resolve, reject) => {
-      fs.createReadStream(path)
-        .pipe(parse({ headers: true, skipRows: 0 }))
-        .on('data', () => totalRows++)
-        .on('end', () => {
-          console.log('[Processor] ✅ Total rows counted:', totalRows);
-          resolve();
-        })
-        .on('error', (error) => {
-          console.error('[Processor] ❌ Error counting rows:', error);
-          reject(error);
-        });
-    });
+      console.log('[Processor] 🔄 Starting single-pass processing...');
 
-    // Second pass: process and insert data
-    console.log('[Processor] 🔄 Starting data processing...');
-    return new Promise<void>((resolve, reject) => {
-      const stream = fs.createReadStream(path)
-        .pipe(parse({ headers: true, skipRows: 0 }));
+      return new Promise<void>((resolve, reject) => {
+        const stream = fs.createReadStream(path)
+          .pipe(parse({ headers: true, skipRows: 0 }));
 
-      stream.on('data', async (row) => {
-        // Pause stream to handle backpressure
-        stream.pause();
+        stream.on('data', async (row) => {
+          // Pause stream to handle backpressure
+          stream.pause();
 
-        batch.push({
-          name: row.name,
-          age: Number(row.age),
-          position: row.position,
-          salary: Number(row.salary),
-        });
-
-        // Insert batch when it reaches BATCH_SIZE
-        if (batch.length >= BATCH_SIZE) {
           try {
-            await this.employeeService.batchInsert([...batch]);
-            processed += batch.length;
-            batch.length = 0;
+            batch.push({
+              name: row.name,
+              age: Number(row.age),
+              position: row.position,
+              salary: Number(row.salary),
+            });
 
-            // Emit progress
-            const progress = Math.min(100, Math.floor((processed / totalRows) * 100));
-            console.log('[Processor] 📈 Progress:', progress, '% (', processed, '/', totalRows, ')');
-            this.gateway.emitProgress(jobId, progress);
+            // Insert batch when it reaches BATCH_SIZE
+            if (batch.length >= BATCH_SIZE) {
+              await this.employeeService.batchInsert([...batch]);
+              processed += batch.length;
+              batch.length = 0;
+
+              // Emit progress (throttled to avoid overwhelming WebSocket)
+              const now = Date.now();
+              if (now - lastProgressEmit >= PROGRESS_EMIT_INTERVAL) {
+                // Estimate progress (we don't know total, so show incremental)
+                console.log('[Processor] 📈 Processed:', processed, 'rows');
+                this.gateway.emitProgress(jobId, Math.min(95, processed)); // Cap at 95% until completion
+                lastProgressEmit = now;
+              }
+
+              // Force garbage collection hint for low-RAM environments
+              if (global.gc && processed % 500 === 0) {
+                global.gc();
+              }
+            }
+
+            // Resume stream
+            stream.resume();
           } catch (error) {
             console.error('[Processor] ❌ Error during batch insert:', error);
+            this.gateway.emitError(jobId, 'Database error during import');
             stream.destroy();
             reject(error);
-            return;
           }
-        }
+        });
 
-        // Resume stream
-        stream.resume();
-      });
+        stream.on('end', async () => {
+          try {
+            // Insert remaining rows
+            if (batch.length > 0) {
+              console.log('[Processor] 📦 Inserting remaining', batch.length, 'rows');
+              await this.employeeService.batchInsert(batch);
+              processed += batch.length;
+            }
 
-      stream.on('end', async () => {
-        try {
-          // Insert remaining rows
-          if (batch.length > 0) {
-            console.log('[Processor] 📦 Inserting remaining', batch.length, 'rows');
-            await this.employeeService.batchInsert(batch);
-            processed += batch.length;
+            // Emit 100% completion
+            console.log('[Processor] ✅ Import complete! Total processed:', processed);
+            this.gateway.emitProgress(jobId, 100);
+
+            // Emit completion event with total processed
+            this.gateway.emitCompletion(jobId, processed);
+
+            // Clean up temp file
+            try {
+              if (fs.existsSync(path)) {
+                fs.unlinkSync(path);
+                console.log('[Processor] 🗑️ Cleaned up temp file');
+              }
+            } catch (unlinkError) {
+              console.warn('[Processor] ⚠️ Could not delete temp file:', unlinkError);
+            }
+
+            resolve();
+          } catch (error) {
+            console.error('[Processor] ❌ Error during final processing:', error);
+            this.gateway.emitError(jobId, 'Failed to complete import');
+            reject(error);
+          }
+        });
+
+        stream.on('error', (error) => {
+          console.error('[Processor] ❌ Stream error:', error);
+          this.gateway.emitError(jobId, 'File processing error');
+
+          // Attempt cleanup on error
+          try {
+            if (fs.existsSync(path)) {
+              fs.unlinkSync(path);
+            }
+          } catch (unlinkError) {
+            console.warn('[Processor] ⚠️ Could not delete temp file after error');
           }
 
-          // Emit 100% completion
-          console.log('[Processor] ✅ Import complete! Total processed:', processed);
-          this.gateway.emitProgress(jobId, 100);
-
-          // Emit completion event with total processed
-          this.gateway.emitCompletion(jobId, processed);
-
-          // Clean up temp file
-          fs.unlinkSync(path);
-          console.log('[Processor] 🗑️ Cleaned up temp file');
-          resolve();
-        } catch (error) {
-          console.error('[Processor] ❌ Error during final processing:', error);
           reject(error);
-        }
+        });
       });
+    } catch (error) {
+      console.error('[Processor] ❌ Unexpected error:', error);
+      this.gateway.emitError(jobId, 'Import failed unexpectedly');
 
-      stream.on('error', (error) => {
-        console.error('[Processor] ❌ Stream error:', error);
-        reject(error);
-      });
-    });
+      // Cleanup on any error
+      try {
+        if (fs.existsSync(path)) {
+          fs.unlinkSync(path);
+        }
+      } catch (unlinkError) {
+        console.warn('[Processor] ⚠️ Could not delete temp file');
+      }
+
+      throw error;
+    }
   }
 }

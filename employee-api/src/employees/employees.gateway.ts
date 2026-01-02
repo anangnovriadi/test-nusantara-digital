@@ -15,4 +15,9 @@ export class EmployeeGateway {
     console.log('[Gateway] ✅ Emitting completion:', { jobId, totalProcessed });
     this.server.emit('importCompleted', { jobId, totalProcessed });
   }
+
+  emitError(jobId: string, message: string) {
+    console.log('[Gateway] ❌ Emitting error:', { jobId, message });
+    this.server.emit('importError', { jobId, message });
+  }
 }

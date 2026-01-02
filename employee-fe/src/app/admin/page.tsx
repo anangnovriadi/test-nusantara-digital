@@ -17,7 +17,7 @@ export default function Page() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">

@@ -78,7 +78,7 @@ export default function Page() {
   const [pageSize, setPageSize] = useState(5);
 
   const [importJobId, setImportJobId] = useState<string | null>(null);
-  const { progress, isCompleted } = useImportProgress(importJobId);
+  const { progress, isCompleted, error: importError } = useImportProgress(importJobId);
 
   useEffect(() => {
     refetch();
@@ -97,6 +97,19 @@ export default function Page() {
       }, 2000);
     }
   }, [isCompleted, importJobId]);
+
+  // Handle import errors
+  useEffect(() => {
+    if (importError && importJobId) {
+      console.log('[Page] ❌ Import error:', importError);
+      toast.error(`Import gagal: ${importError}`);
+
+      // Reset state after showing error
+      setTimeout(() => {
+        setImportJobId(null);
+      }, 3000);
+    }
+  }, [importError, importJobId]);
 
   const handleEdit = (row: Employee) => {
     setEditMode("edit");
@@ -283,10 +296,20 @@ export default function Page() {
         {importJobId && (
           <div className="py-4 px-2">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">Import Progress</span>
-              <span className="text-sm text-muted-foreground">{progress}%</span>
+              <span className="text-sm font-medium">
+                {importError ? "Import Gagal" : "Import Progress"}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {importError ? "Error" : `${progress}%`}
+              </span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress
+              value={importError ? 100 : progress}
+              className={importError ? "h-2 bg-red-100" : "h-2"}
+            />
+            {importError && (
+              <p className="text-xs text-red-600 mt-1">{importError}</p>
+            )}
           </div>
         )}
 

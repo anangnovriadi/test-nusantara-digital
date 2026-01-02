@@ -15,6 +15,7 @@ export interface ImportProgress {
 export const useImportProgress = (jobId: string | null) => {
     const [progress, setProgress] = useState<number>(0);
     const [isCompleted, setIsCompleted] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
     const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
@@ -22,6 +23,7 @@ export const useImportProgress = (jobId: string | null) => {
             console.log('[WebSocket] No jobId, skipping connection');
             setProgress(0);
             setIsCompleted(false);
+            setError(null);
             return;
         }
 
@@ -31,10 +33,14 @@ export const useImportProgress = (jobId: string | null) => {
         // Reset state when new jobId is set
         setProgress(0);
         setIsCompleted(false);
+        setError(null);
 
         // Create socket connection
         const newSocket = io(SOCKET_URL, {
             transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
         });
 
         newSocket.on('connect', () => {
@@ -50,6 +56,7 @@ export const useImportProgress = (jobId: string | null) => {
             if (data.jobId === jobId) {
                 console.log('[WebSocket] ✅ JobId matches, updating progress to:', data.progress);
                 setProgress(data.progress);
+                setError(null); // Clear any previous errors
             } else {
                 console.log('[WebSocket] ⚠️ JobId mismatch. Expected:', jobId, 'Got:', data.jobId);
             }
@@ -61,6 +68,16 @@ export const useImportProgress = (jobId: string | null) => {
                 console.log('[WebSocket] ✅ Import completed! Total processed:', data.totalProcessed);
                 setProgress(100);
                 setIsCompleted(true);
+                setError(null);
+            }
+        });
+
+        newSocket.on('importError', (data: { jobId: string; message: string }) => {
+            console.log('[WebSocket] ❌ Received error:', data);
+            if (data.jobId === jobId) {
+                console.log('[WebSocket] ❌ Import error:', data.message);
+                setError(data.message);
+                setIsCompleted(false);
             }
         });
 
@@ -76,5 +93,5 @@ export const useImportProgress = (jobId: string | null) => {
         };
     }, [jobId]);
 
-    return { progress, isCompleted, socket };
+    return { progress, isCompleted, error, socket };
 };
