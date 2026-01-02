@@ -27,6 +27,7 @@ import { NotificationsModule } from './notifications/notifications.module';
         database: config.get<string>('DB_NAME'),
         autoLoadEntities: true,
         synchronize: true,
+        timezone: 'Z', // Force UTC timezone
       }),
     }),
 

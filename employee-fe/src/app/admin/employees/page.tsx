@@ -226,14 +226,19 @@ export default function Page() {
         </a>
       ),
       cell: ({ row }) => {
-        const date = new Date(row.original.created_at);
-        return <div className="text-left">{date.toLocaleDateString('id-ID', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        })}</div>
+        const utcDate = new Date(row.original.created_at);
+        // Manual convert UTC to WIB (UTC+7)
+        const wibDate = new Date(utcDate.getTime() + (7 * 60 * 60 * 1000));
+
+        // Manual format using UTC methods (since we already added 7 hours)
+        const day = wibDate.getUTCDate();
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const month = monthNames[wibDate.getUTCMonth()];
+        const year = wibDate.getUTCFullYear();
+        const hours = String(wibDate.getUTCHours()).padStart(2, '0');
+        const minutes = String(wibDate.getUTCMinutes()).padStart(2, '0');
+
+        return <div className="text-left">{`${day} ${month} ${year}, ${hours}:${minutes}`}</div>
       }
     },
     {
