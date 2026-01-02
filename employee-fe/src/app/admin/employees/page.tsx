@@ -89,7 +89,7 @@ export default function Page() {
     if (progress === 100 && importJobId) {
       setTimeout(() => {
         setImportJobId(null);
-        toast.success("Import CSV berhasil!");
+        toast.success("Import CSV berhasil");
         refetch();
       }, 1000);
     }
