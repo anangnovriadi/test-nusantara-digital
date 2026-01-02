@@ -60,9 +60,24 @@ export class EmployeeProcessor {
               // Emit progress (throttled to avoid overwhelming WebSocket)
               const now = Date.now();
               if (now - lastProgressEmit >= PROGRESS_EMIT_INTERVAL) {
-                // Estimate progress (we don't know total, so show incremental)
                 console.log('[Processor] 📈 Processed:', processed, 'rows');
-                this.gateway.emitProgress(jobId, Math.min(95, processed)); // Cap at 95% until completion
+
+                // Calculate progress percentage with smart estimation
+                // Since we don't know total, estimate based on typical file sizes
+                // 0-1000 rows: 0-30%, 1000-5000: 30-60%, 5000-10000: 60-80%, 10000+: 80-90%
+                let progressPercentage = 0;
+                if (processed < 1000) {
+                  progressPercentage = Math.floor((processed / 1000) * 30);
+                } else if (processed < 5000) {
+                  progressPercentage = 30 + Math.floor(((processed - 1000) / 4000) * 30);
+                } else if (processed < 10000) {
+                  progressPercentage = 60 + Math.floor(((processed - 5000) / 5000) * 20);
+                } else {
+                  // Cap at 90% until we know it's done
+                  progressPercentage = Math.min(90, 80 + Math.floor(((processed - 10000) / 10000) * 10));
+                }
+
+                this.gateway.emitProgress(jobId, progressPercentage);
                 lastProgressEmit = now;
               }
 
