@@ -19,6 +19,13 @@ export class EmployeeProcessor {
     console.log('[Processor] 🚀 Starting import job:', jobId);
     console.log('[Processor] File path:', path);
 
+    // Emit 0% progress immediately to signal job has started
+    this.gateway.emitProgress(jobId, 0);
+    console.log('[Processor] 📡 Emitted initial 0% progress');
+
+    // Small delay to ensure frontend WebSocket connection is established
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     let totalRows = 0;
     let processed = 0;
     const batch: any[] = [];
@@ -92,6 +99,9 @@ export class EmployeeProcessor {
           // Emit 100% completion
           console.log('[Processor] ✅ Import complete! Total processed:', processed);
           this.gateway.emitProgress(jobId, 100);
+
+          // Emit completion event with total processed
+          this.gateway.emitCompletion(jobId, processed);
 
           // Clean up temp file
           fs.unlinkSync(path);

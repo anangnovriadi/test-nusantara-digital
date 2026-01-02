@@ -14,16 +14,23 @@ export interface ImportProgress {
 
 export const useImportProgress = (jobId: string | null) => {
     const [progress, setProgress] = useState<number>(0);
+    const [isCompleted, setIsCompleted] = useState<boolean>(false);
     const [socket, setSocket] = useState<Socket | null>(null);
 
     useEffect(() => {
         if (!jobId) {
             console.log('[WebSocket] No jobId, skipping connection');
+            setProgress(0);
+            setIsCompleted(false);
             return;
         }
 
         console.log('[WebSocket] Connecting for jobId:', jobId);
         console.log('[WebSocket] Connecting to:', SOCKET_URL);
+
+        // Reset state when new jobId is set
+        setProgress(0);
+        setIsCompleted(false);
 
         // Create socket connection
         const newSocket = io(SOCKET_URL, {
@@ -48,6 +55,15 @@ export const useImportProgress = (jobId: string | null) => {
             }
         });
 
+        newSocket.on('importCompleted', (data: { jobId: string; totalProcessed: number }) => {
+            console.log('[WebSocket] ✅ Received completion:', data);
+            if (data.jobId === jobId) {
+                console.log('[WebSocket] ✅ Import completed! Total processed:', data.totalProcessed);
+                setProgress(100);
+                setIsCompleted(true);
+            }
+        });
+
         newSocket.on('disconnect', () => {
             console.log('[WebSocket] Disconnected');
         });
@@ -60,5 +76,5 @@ export const useImportProgress = (jobId: string | null) => {
         };
     }, [jobId]);
 
-    return { progress, socket };
+    return { progress, isCompleted, socket };
 };

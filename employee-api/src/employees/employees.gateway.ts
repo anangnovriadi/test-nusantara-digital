@@ -10,4 +10,9 @@ export class EmployeeGateway {
     console.log('[Gateway] 📡 Emitting progress:', { jobId, progress });
     this.server.emit('importProgress', { jobId, progress });
   }
+
+  emitCompletion(jobId: string, totalProcessed: number) {
+    console.log('[Gateway] ✅ Emitting completion:', { jobId, totalProcessed });
+    this.server.emit('importCompleted', { jobId, totalProcessed });
+  }
 }

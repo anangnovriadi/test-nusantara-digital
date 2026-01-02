@@ -78,22 +78,25 @@ export default function Page() {
   const [pageSize, setPageSize] = useState(5);
 
   const [importJobId, setImportJobId] = useState<string | null>(null);
-  const { progress } = useImportProgress(importJobId);
+  const { progress, isCompleted } = useImportProgress(importJobId);
 
   useEffect(() => {
     refetch();
   }, []);
 
-  // Reset import state when progress reaches 100%
+  // Reset import state when import is completed
   useEffect(() => {
-    if (progress === 100 && importJobId) {
+    if (isCompleted && importJobId) {
+      console.log('[Page] ✅ Import completed, showing success message');
+      toast.success("Import CSV berhasil");
+      refetch();
+
+      // Reset state after a short delay
       setTimeout(() => {
         setImportJobId(null);
-        toast.success("Import CSV berhasil");
-        refetch();
-      }, 1000);
+      }, 2000);
     }
-  }, [progress, importJobId]);
+  }, [isCompleted, importJobId]);
 
   const handleEdit = (row: Employee) => {
     setEditMode("edit");
