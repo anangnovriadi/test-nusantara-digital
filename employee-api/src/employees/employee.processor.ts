@@ -104,6 +104,22 @@ export class EmployeeProcessor {
               console.log('[Processor] 📦 Inserting remaining', batch.length, 'rows');
               await this.employeeService.batchInsert(batch);
               processed += batch.length;
+
+              // Emit progress before completion (especially for small files)
+              // Calculate percentage using same logic as batch processing
+              let progressPercentage = 0;
+              if (processed < 1000) {
+                progressPercentage = Math.floor((processed / 1000) * 30);
+              } else if (processed < 5000) {
+                progressPercentage = 30 + Math.floor(((processed - 1000) / 4000) * 30);
+              } else if (processed < 10000) {
+                progressPercentage = 60 + Math.floor(((processed - 5000) / 5000) * 20);
+              } else {
+                progressPercentage = Math.min(90, 80 + Math.floor(((processed - 10000) / 10000) * 10));
+              }
+
+              console.log('[Processor] 📊 Final progress before completion:', progressPercentage, '%');
+              this.gateway.emitProgress(jobId, progressPercentage);
             }
 
             // Emit 100% completion
