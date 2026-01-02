@@ -97,7 +97,7 @@ export default function Page() {
     if (isCompleted && importJobId) {
       console.log('[Page] ✅ Import completed, showing success message');
       refetch(); // Refetch data (async)
-      toast.success("Import CSV berhasil! Sedang memuat data terbaru...");
+      toast.success("Import CSV berhasil, memuat data terbaru...");
 
       // Reset state after a short delay
       setTimeout(() => {
@@ -266,7 +266,7 @@ export default function Page() {
   });
 
   return (
-    <DashboardLayout title="PT Nusantara Digital">
+    <DashboardLayout title="Karyawan">
       <div className="bg-white dark:bg-muted/50 rounded-md shadow px-4">
         <div className="md:flex justify-between items-center py-4 gap-2">
           <Input
