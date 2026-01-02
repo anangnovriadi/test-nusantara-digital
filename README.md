@@ -99,6 +99,19 @@ npm run dev
 ```
 Running on: **http://localhost:4002**
 
+## Running Tests
+
+### Backend Tests
+```bash
+cd employee-api
+
+# Run all tests
+npm run test
+
+# Run tests with coverage
+npm run test:cov
+```
+
 ## Access
 
 - **Frontend:** http://localhost:4002

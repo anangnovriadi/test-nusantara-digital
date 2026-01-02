@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { EmployeesController } from './employees.controller';
 import { EmployeesService } from './employees.service';
+import { getQueueToken } from '@nestjs/bull';
 
 describe('EmployeesController', () => {
   let controller: EmployeesController;
@@ -14,6 +15,10 @@ describe('EmployeesController', () => {
     remove: jest.fn(),
   };
 
+  const mockQueue = {
+    add: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EmployeesController],
@@ -21,6 +26,10 @@ describe('EmployeesController', () => {
         {
           provide: EmployeesService,
           useValue: mockService,
+        },
+        {
+          provide: getQueueToken('importEmployee'),
+          useValue: mockQueue,
         },
       ],
     }).compile();
@@ -39,7 +48,7 @@ describe('EmployeesController', () => {
       salary: 15000000,
     });
 
-    expect(result).toEqual({ id: 'uuid' });
+    expect(result).toEqual({ data: { id: 'uuid' } });
   });
 
   it('should return all employees', async () => {
@@ -47,7 +56,7 @@ describe('EmployeesController', () => {
 
     const result = await controller.findAll();
 
-    expect(result).toEqual([{ id: '1' }]);
+    expect(result).toEqual({ data: [{ id: '1' }], total: 1 });
   });
 
   it('should return employee by id', async () => {
@@ -55,7 +64,7 @@ describe('EmployeesController', () => {
 
     const result = await controller.findOne('1');
 
-    expect(result).toEqual({ id: '1' });
+    expect(result).toEqual({ data: { id: '1' } });
   });
 
   it('should update employee', async () => {
@@ -63,7 +72,7 @@ describe('EmployeesController', () => {
 
     const result = await controller.update('1', { position: 'Sales' });
 
-    expect(result).toEqual({ affected: 1 });
+    expect(result).toEqual({ data: { message: 'Employee updated successfully' } });
   });
 
   it('should delete employee', async () => {
@@ -71,6 +80,6 @@ describe('EmployeesController', () => {
 
     const result = await controller.remove('1');
 
-    expect(result).toEqual({ affected: 1 });
+    expect(result).toEqual({ data: { message: 'Employee deleted successfully' } });
   });
 });

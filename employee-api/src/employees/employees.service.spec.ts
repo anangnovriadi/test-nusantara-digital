@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EmployeesService } from './employees.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Employee } from './employee.entity';
+import { NotificationsService } from '../notifications/notifications.service';
 
 describe('EmployeesService', () => {
   let service: EmployeesService;
@@ -14,6 +15,10 @@ describe('EmployeesService', () => {
     delete: jest.fn(),
   };
 
+  const mockNotificationsService = {
+    sendNewEmployeeNotification: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -21,6 +26,10 @@ describe('EmployeesService', () => {
         {
           provide: getRepositoryToken(Employee),
           useValue: mockRepo,
+        },
+        {
+          provide: NotificationsService,
+          useValue: mockNotificationsService,
         },
       ],
     }).compile();
