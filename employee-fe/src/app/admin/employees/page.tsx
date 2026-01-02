@@ -48,8 +48,16 @@ import { toast } from "sonner";
 import { useImportProgress } from "@/hooks/use-import-progress";
 import { Progress } from "@/components/ui/progress";
 
-const convertToRupiah = (num: number) => {
-  return "Rp." + Number(num)
+const convertToRupiah = (num: number | string) => {
+  // Convert to number if string
+  const value = typeof num === 'string' ? parseFloat(num) : num;
+
+  // Handle NaN, null, undefined, or invalid values
+  if (value == null || isNaN(value)) {
+    return "Rp.0,00";
+  }
+
+  return "Rp." + value
     .toFixed(2)
     .replace(/\d(?=(\d{3})+\.)/g, "$&.")
     .replace(".", ",");

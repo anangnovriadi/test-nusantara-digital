@@ -20,7 +20,14 @@ export class Employee {
   @Column()
   position: string;
 
-  @Column('decimal', { precision: 12, scale: 2 })
+  @Column('decimal', {
+    precision: 12,
+    scale: 2,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value)
+    }
+  })
   salary: number;
 
   @CreateDateColumn()
