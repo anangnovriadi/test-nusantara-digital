@@ -228,13 +228,13 @@ export default function Page() {
       cell: ({ row }) => {
         const date = new Date(row.original.created_at);
 
-        // Format tanggal tanpa timezone adjustment
-        const day = date.getDate();
+        // Format tanggal menggunakan UTC methods untuk menghindari timezone conversion
+        const day = date.getUTCDate();
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-        const month = monthNames[date.getMonth()];
-        const year = date.getFullYear();
-        const hours = String(date.getHours()).padStart(2, '0');
-        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const month = monthNames[date.getUTCMonth()];
+        const year = date.getUTCFullYear();
+        const hours = String(date.getUTCHours()).padStart(2, '0');
+        const minutes = String(date.getUTCMinutes()).padStart(2, '0');
 
         return <div className="text-left">{`${day} ${month} ${year}, ${hours}:${minutes}`}</div>
       }
