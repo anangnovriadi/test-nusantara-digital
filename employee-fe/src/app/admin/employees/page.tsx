@@ -42,9 +42,11 @@ import {
   useCreateEmployeeMutation,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
+  useImportEmployeesMutation,
 } from "@/store/api/employee-api";
 import { toast } from "sonner";
-import Papa from "papaparse";
+import { useImportProgress } from "@/hooks/use-import-progress";
+import { Progress } from "@/components/ui/progress";
 
 const convertToRupiah = (num: number) => {
   return "Rp." + Number(num)
@@ -70,15 +72,28 @@ export default function Page() {
   const [createEmployee] = useCreateEmployeeMutation();
   const [updateEmployee] = useUpdateEmployeeMutation();
   const [deleteEmployee, { isLoading: isDeleting }] = useDeleteEmployeeMutation();
+  const [importEmployees, { isLoading: isImporting }] = useImportEmployeesMutation();
 
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(5);
 
-  const [importing, setImporting] = useState(false);
+  const [importJobId, setImportJobId] = useState<string | null>(null);
+  const { progress } = useImportProgress(importJobId);
 
   useEffect(() => {
     refetch();
   }, []);
+
+  // Reset import state when progress reaches 100%
+  useEffect(() => {
+    if (progress === 100 && importJobId) {
+      setTimeout(() => {
+        setImportJobId(null);
+        toast.success("Import CSV berhasil!");
+        refetch();
+      }, 1000);
+    }
+  }, [progress, importJobId]);
 
   const handleEdit = (row: Employee) => {
     setEditMode("edit");
@@ -123,79 +138,55 @@ export default function Page() {
   };
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const handleImportCSV = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("Importing CSV...");
+  const handleImportCSV = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setImporting(true);
-
-    Papa.parse<CreateEmployeeRequest>(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: async (results: any) => {
-        try {
-          for (const row of results.data) {
-            const data: CreateEmployeeRequest = {
-              name: row.name,
-              age: Number(row.age),
-              position: row.position,
-              salary: Number(row.salary),
-            };
-            await createEmployee(data).unwrap();
-          }
-          toast.success("Import CSV berhasil");
-          refetch();
-        } catch (err) {
-          console.error(err);
-          toast.error("Gagal import CSV");
-        } finally {
-          setImporting(false);
-        }
-      },
-      error: (err: any) => {
-        console.error(err);
-        toast.error("Gagal membaca file CSV");
-        setImporting(false);
-      },
-    });
+    try {
+      const result = await importEmployees(file).unwrap();
+      setImportJobId(result.jobId);
+      toast.info(result.message);
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal mengupload file CSV");
+    }
 
     event.target.value = "";
   };
 
   const columns: ColumnDef<Employee>[] = [
-    { 
-      id: "number", 
-      header: () => <div className="text-center">#</div>, 
-      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>, 
-      enableSorting: false 
+    {
+      id: "number",
+      header: () => <div className="text-center">#</div>,
+      cell: ({ row }) => <div className="text-center">{row.index + 1}</div>,
+      enableSorting: false
     },
-    { 
-      accessorKey: "name", 
+    {
+      accessorKey: "name",
       header: ({ column }) => (
         <a onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="cursor-pointer flex items-center gap-1">
           Nama <ArrowUpDown className="w-4 h-4" />
         </a>
       )
     },
-    { 
-      accessorKey: "age", 
+    {
+      accessorKey: "age",
       header: ({ column }) => (
         <a onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="cursor-pointer flex items-center gap-1">
           Umur <ArrowUpDown className="w-4 h-4" />
         </a>
       )
     },
-    { 
-      accessorKey: "position", 
+    {
+      accessorKey: "position",
       header: ({ column }) => (
         <a onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="cursor-pointer flex items-center gap-1">
           Posisi <ArrowUpDown className="w-4 h-4" />
         </a>
       )
     },
-    { 
-      accessorKey: "salary", 
+    {
+      accessorKey: "salary",
       header: ({ column }) => (
         <a onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="cursor-pointer flex items-center gap-1">
           Gaji <ArrowUpDown className="w-4 h-4" />
@@ -210,9 +201,9 @@ export default function Page() {
         const emp = row.original;
         return (
           <div className="flex gap-1">
-            <Button size="icon" className="text-gray-600" variant="ghost" onClick={() => { setSelectedEmployee(emp); setDetailDialogOpen(true); }}><Eye /></Button>
-            <Button size="icon" className="text-blue-600" variant="ghost" onClick={() => handleEdit(emp)}><Edit /></Button>
-            <Button size="icon" className="text-red-600" variant="ghost" onClick={() => { setDeletingRowId(emp.id); setDeleteDialogOpen(true); }}><Trash2 /></Button>
+            <Button size="icon" className="text-gray-600 cursor-pointer" variant="ghost" onClick={() => { setSelectedEmployee(emp); setDetailDialogOpen(true); }}><Eye /></Button>
+            <Button size="icon" className="text-blue-600 cursor-pointer" variant="ghost" onClick={() => handleEdit(emp)}><Edit /></Button>
+            <Button size="icon" className="text-red-600 cursor-pointer" variant="ghost" onClick={() => { setDeletingRowId(emp.id); setDeleteDialogOpen(true); }}><Trash2 /></Button>
           </div>
         );
       },
@@ -264,9 +255,9 @@ export default function Page() {
             <Button
               className="cursor-pointer"
               onClick={() => fileInputRef.current?.click()}
-              disabled={importing}
+              disabled={isImporting || !!importJobId}
             >
-              {importing ? "Importing..." : "Import CSV"}
+              {isImporting || importJobId ? "Importing..." : "Import CSV"}
             </Button>
 
             <input
@@ -277,9 +268,20 @@ export default function Page() {
               className="hidden"
             />
 
-            <Button onClick={handleAdd}>Tambah Karyawan</Button>
+            <Button onClick={handleAdd} className="cursor-pointer">Tambah Karyawan</Button>
           </div>
         </div>
+
+        {/* Progress Bar */}
+        {importJobId && (
+          <div className="py-4 px-2">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Import Progress</span>
+              <span className="text-sm text-muted-foreground">{progress}%</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+        )}
 
         {/* Table */}
         <div className="overflow-auto border rounded-md">
@@ -326,7 +328,7 @@ export default function Page() {
             <Button size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>Next</Button>
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-300">
-            Total Data: <span className="font-medium">{employeeData?.total ?? employeeData?.data?.length ?? 0}</span> &nbsp;|&nbsp; 
+            Total Data: <span className="font-medium">{employeeData?.total ?? employeeData?.data?.length ?? 0}</span> &nbsp;|&nbsp;
             Halaman <span className="font-medium">{table.getState().pagination.pageIndex + 1}</span> dari <span className="font-medium">{table.getPageCount()}</span>
           </div>
         </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import Layout from "@/components/layouts/layout";
 import "./globals.css";
 import { Providers } from "./providers";

@@ -2,16 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Employee } from './employee.entity';
+import { NotificationsService } from '../notifications/notifications.service';
+import { CreateEmployeeDto } from './dto/create-employee.dto';
 
 @Injectable()
 export class EmployeesService {
   constructor(
     @InjectRepository(Employee)
     private readonly repo: Repository<Employee>,
+    private readonly notifications: NotificationsService
   ) {}
 
-  create(data: Partial<Employee>) {
-    return this.repo.save(data);
+  async create(data: CreateEmployeeDto) {
+    const employee = await this.repo.save(data);
+
+    await this.notifications.sendNewEmployeeNotification(employee.id, employee.name);
+
+    return employee;
   }
 
   findAll() {
@@ -28,5 +35,9 @@ export class EmployeesService {
 
   remove(id: string) {
     return this.repo.delete(id);
+  }
+
+  async batchInsert(data: Partial<Employee>[]) {
+    await this.repo.save(data);
   }
 }

@@ -2,7 +2,7 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { ApiResponse } from '@/types/api-response';
 import { baseQuery } from './base-query';
 
-export interface SearchParams {}
+export interface SearchParams { }
 
 export interface Employee {
   id: string;
@@ -33,10 +33,10 @@ export interface UpdateEmployeeRequest {
 ====================== */
 
 export interface GetEmployeesResponse
-  extends ApiResponse<{ data: Employee[] }> {}
+  extends ApiResponse<{ data: Employee[] }> { }
 
 export interface GetEmployeeDetailResponse
-  extends ApiResponse<{ data: Employee }> {}
+  extends ApiResponse<{ data: Employee }> { }
 
 /* ======================
    RTK QUERY
@@ -94,6 +94,22 @@ export const employeeApi = createApi({
       }),
       invalidatesTags: ['Employees'],
     }),
+
+    importEmployees: builder.mutation<
+      { jobId: string; message: string },
+      File
+    >({
+      query: (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return {
+          url: '/employees/import',
+          method: 'POST',
+          body: formData,
+        };
+      },
+      invalidatesTags: ['Employees'],
+    }),
   }),
 });
 
@@ -103,4 +119,5 @@ export const {
   useGetEmployeeDetailQuery,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
+  useImportEmployeesMutation,
 } = employeeApi;

@@ -7,7 +7,10 @@ import {
   Param,
   Body,
   UseGuards,
+  UploadedFile,
+  UseInterceptors
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -15,16 +18,22 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { InjectQueue } from '@nestjs/bull';
 import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { Queue } from 'bull';
+import { v4 as uuid } from 'uuid';
 
 @ApiTags('Employees')
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuard('jwt'))
 @Controller('employees')
 export class EmployeesController {
-  constructor(private readonly service: EmployeesService) {}
+  constructor(
+    private readonly service: EmployeesService,
+    @InjectQueue('importEmployee') private importQueue: Queue
+  ) { }
 
   @Post()
   @ApiBody({ type: CreateEmployeeDto })
@@ -123,5 +132,52 @@ export class EmployeesController {
   async remove(@Param('id') id: string) {
     await this.service.remove(id);
     return { data: { message: 'Employee deleted successfully' } };
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiResponse({
+    status: 201,
+    description: 'CSV import job created',
+    schema: {
+      example: {
+        jobId: 'uuid',
+        message: 'File diterima, sedang diproses...',
+      },
+    },
+  })
+  async importCSV(@UploadedFile() file: Express.Multer.File) {
+    console.log('[Controller] 📁 CSV import request received');
+    console.log('[Controller] File size:', file.size, 'bytes');
+
+    const jobId = uuid();
+    const path = `/tmp/${jobId}.csv`;
+
+    console.log('[Controller] Generated jobId:', jobId);
+    console.log('[Controller] Temp file path:', path);
+
+    // Stream file to disk instead of loading entire buffer to RAM
+    const fs = require('fs');
+    const writeStream = fs.createWriteStream(path);
+
+    return new Promise((resolve, reject) => {
+      writeStream.on('finish', async () => {
+        console.log('[Controller] ✅ File written to disk');
+        console.log('[Controller] 📋 Creating job in Redis Queue...');
+
+        await this.importQueue.add('import', { path, jobId });
+
+        console.log('[Controller] ✅ Job created successfully');
+        resolve({ jobId, message: 'File diterima, sedang diproses...' });
+      });
+
+      writeStream.on('error', (err) => {
+        console.error('[Controller] ❌ Error writing file:', err);
+        reject(err);
+      });
+
+      writeStream.write(file.buffer);
+      writeStream.end();
+    });
   }
 }
