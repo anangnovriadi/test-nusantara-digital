@@ -219,6 +219,24 @@ export default function Page() {
       cell: ({ row }) => <div className="text-left">{convertToRupiah(row.original.salary)}</div>
     },
     {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <a onClick={() => column.toggleSorting(column.getIsSorted() === "asc")} className="cursor-pointer flex items-center gap-1">
+          Tanggal Dibuat <ArrowUpDown className="w-4 h-4" />
+        </a>
+      ),
+      cell: ({ row }) => {
+        const date = new Date(row.original.created_at);
+        return <div className="text-left">{date.toLocaleDateString('id-ID', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}</div>
+      }
+    },
+    {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
