@@ -27,7 +27,8 @@ import { NotificationsModule } from './notifications/notifications.module';
         database: config.get<string>('DB_NAME'),
         autoLoadEntities: true,
         synchronize: true,
-        timezone: 'Z', // Force UTC timezone
+        timezone: '+00:00', // Store and retrieve dates in UTC
+        dateStrings: false,
       }),
     }),
 
