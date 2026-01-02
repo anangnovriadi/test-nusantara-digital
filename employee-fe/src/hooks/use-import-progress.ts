@@ -28,15 +28,15 @@ export const useImportProgress = (jobId: string | null) => {
         }
 
         console.log('[WebSocket] Connecting for jobId:', jobId);
-        console.log('[WebSocket] Connecting to:', SOCKET_URL);
+        console.log('[WebSocket] Connecting to:', SOCKET_URL + '/import');
 
         // Reset state when new jobId is set
         setProgress(0);
         setIsCompleted(false);
         setError(null);
 
-        // Create socket connection
-        const newSocket = io(SOCKET_URL, {
+        // Create socket connection with '/import' namespace
+        const newSocket = io(SOCKET_URL + '/import', {
             transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionAttempts: 5,

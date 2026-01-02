@@ -1,7 +1,10 @@
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({
+  namespace: 'import',  // Add namespace to prevent conflict
+  cors: { origin: '*' }
+})
 export class EmployeeGateway {
   @WebSocketServer()
   server: Server;
