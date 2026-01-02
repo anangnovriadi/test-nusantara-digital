@@ -14,7 +14,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Edit, Trash2, Eye, Loader2 } from "lucide-react";
+import { ArrowUpDown, Edit, Trash2, Eye, Loader2, Upload, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -242,7 +242,7 @@ export default function Page() {
   });
 
   return (
-    <DashboardLayout title="Manajemen Karyawan">
+    <DashboardLayout title="PT Nusantara Digital">
       <div className="bg-white dark:bg-muted/50 rounded-md shadow px-4">
         <div className="md:flex justify-between items-center py-4 gap-2">
           <Input
@@ -257,6 +257,7 @@ export default function Page() {
               onClick={() => fileInputRef.current?.click()}
               disabled={isImporting || !!importJobId}
             >
+              <Upload className="w-4 h-4" />
               {isImporting || importJobId ? "Importing..." : "Import CSV"}
             </Button>
 
@@ -268,7 +269,10 @@ export default function Page() {
               className="hidden"
             />
 
-            <Button onClick={handleAdd} className="cursor-pointer">Tambah Karyawan</Button>
+            <Button onClick={handleAdd} className="cursor-pointer">
+              <UserPlus className="w-4 h-4" />
+              Tambah Karyawan
+            </Button>
           </div>
         </div>
 

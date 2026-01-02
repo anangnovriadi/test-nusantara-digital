@@ -95,6 +95,21 @@ export const employeeApi = createApi({
       invalidatesTags: ['Employees'],
     }),
 
+    getEmployeeStats: builder.query<{
+      totalEmployees: number;
+      positions: string[];
+    }, void>({
+      query: () => ({
+        url: '/employees/stats',
+        method: 'GET',
+      }),
+      transformResponse: (response: ApiResponse<{
+        totalEmployees: number;
+        positions: string[];
+      }>) => response.data,
+      providesTags: ['Employees'],
+    }),
+
     importEmployees: builder.mutation<
       { jobId: string; message: string },
       File
@@ -119,5 +134,6 @@ export const {
   useGetEmployeeDetailQuery,
   useUpdateEmployeeMutation,
   useDeleteEmployeeMutation,
+  useGetEmployeeStatsQuery,
   useImportEmployeesMutation,
 } = employeeApi;

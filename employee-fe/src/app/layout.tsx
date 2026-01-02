@@ -10,8 +10,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <title>Manajemen Karyawan</title>
-        <meta name="description" content="Manajemen Karyawan" />
+        <title>PT Nusantara Digital</title>
+        <meta name="description" content="PT Nusantara Digital" />
       </head>
       <body className="bg-gray-50 dark:bg-black text-black dark:text-white">
         <Providers>

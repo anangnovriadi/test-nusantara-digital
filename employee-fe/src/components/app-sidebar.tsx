@@ -46,6 +46,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         icon: Users,
         items: [],
       },
+      {
+        title: "Pengaturan",
+        url: ROUTES.ADMIN.SETTINGS,
+        icon: Settings2,
+        items: [],
+      },
     ],
   }
 
@@ -60,7 +66,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <School className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="text-md font-bold">Manajemen Karyawan</span>
+                  <span className="text-md font-bold">PT Nusantara Digital</span>
                 </div>
               </a>
             </SidebarMenuButton>

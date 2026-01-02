@@ -2,43 +2,45 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { ApiResponse } from '@/types/api-response';
 import { baseQuery } from './base-query';
 
-export interface SearchParams {}
-export interface Setting {
-    id: number;
+export interface UserProfile {
+    id: string;
     fullname: string;
+    email: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
 }
 
-export interface UpdateSettingRequest {
+export interface UpdateProfileRequest {
     fullname: string;
 }
-
-export interface GetSettingDetailResponse extends ApiResponse<{ data: Setting }> {}
 
 export const settingApi = createApi({
     reducerPath: 'settingApi',
     baseQuery: baseQuery,
-    tagTypes: ['Settings'],
+    tagTypes: ['UserProfile'],
     endpoints: (builder) => ({
-        getDetailSetting: builder.query<GetSettingDetailResponse, {}>({
+        getUserProfile: builder.query<UserProfile, void>({
             query: () => ({
-                url: `/setting/detail`,
+                url: `/users/profile`,
                 method: 'GET',
             }),
-            providesTags: ['Settings'],
+            providesTags: ['UserProfile'],
         }),
 
-        updateSetting: builder.mutation<ApiResponse<any>, { data: UpdateSettingRequest }>({
-            query: ({ data }) => ({
-                url: `/setting`,
-                method: 'PATCH',
+        updateUserProfile: builder.mutation<UserProfile, UpdateProfileRequest>({
+            query: (data) => ({
+                url: `/users/profile`,
+                method: 'PUT',
                 body: data,
             }),
-            invalidatesTags: ['Settings'],
+            invalidatesTags: ['UserProfile'],
         }),
     }),
 });
 
 export const {
-    useGetDetailSettingQuery,
-    useUpdateSettingMutation,
+    useGetUserProfileQuery,
+    useUpdateUserProfileMutation,
 } = settingApi;
+

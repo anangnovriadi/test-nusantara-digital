@@ -1,6 +1,6 @@
 # Employee Management System
 
-Sistem manajemen karyawan dengan fitur CRUD dan CSV import.
+Sistem PT Nusantara Digital dengan fitur CRUD dan CSV import.
 
 ## Tech Stack
 
@@ -121,16 +121,6 @@ npm run test:cov
 ## Default Login
 
 Login dengan user dari seeder:
-- Username: (from seeder)
-- Password: (from seeder)
+- Username: admin@mail.com
+- Password: Admin123@
 
-## Features
-
-- ✅ Employee CRUD
-- ✅ CSV Import dengan streaming
-- ✅ Real-time progress tracking
-- ✅ Authentication (JWT)
-
----
-
-**Version:** 1.0.0

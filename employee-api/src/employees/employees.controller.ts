@@ -59,6 +59,24 @@ export class EmployeesController {
     return { data: employee };
   }
 
+  @Get('stats')
+  @ApiResponse({
+    status: 200,
+    description: 'Retrieve employee statistics',
+    schema: {
+      example: {
+        data: {
+          totalEmployees: 100,
+          positions: ['Software Engineer', 'Sales Executive', 'Manager'],
+        },
+      },
+    },
+  })
+  async getStats() {
+    const stats = await this.service.getStats();
+    return { data: stats };
+  }
+
   @Get()
   @ApiResponse({
     status: 200,

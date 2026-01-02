@@ -11,7 +11,7 @@ export class EmployeesService {
     @InjectRepository(Employee)
     private readonly repo: Repository<Employee>,
     private readonly notifications: NotificationsService
-  ) {}
+  ) { }
 
   async create(data: CreateEmployeeDto) {
     const employee = await this.repo.save(data);
@@ -35,6 +35,20 @@ export class EmployeesService {
 
   remove(id: string) {
     return this.repo.delete(id);
+  }
+
+  async getStats() {
+    const employees = await this.repo.find();
+    const totalEmployees = employees.length;
+
+    // Get unique positions
+    const positionsSet = new Set(employees.map(emp => emp.position));
+    const positions = Array.from(positionsSet);
+
+    return {
+      totalEmployees,
+      positions,
+    };
   }
 
   async batchInsert(data: Partial<Employee>[]) {

@@ -27,7 +27,7 @@ export default function Navbar() {
         {/* Logo */}
         <a href="" className="text-lg flex gap-2 items-center font-bold hover:opacity-80">
           <School />
-          <span className="text-sm">Manajemen Karyawan</span>
+          <span className="text-sm">PT Nusantara Digital</span>
         </a>
 
         {/* Right Buttons */}
@@ -57,9 +57,8 @@ export default function Navbar() {
         <div className="md:hidden border-t text-center">
           <a
             href="/admin"
-            className={`block text-sm hover:text-blue-500 p-2 transition-colors ${
-              isActive("/admin") ? "text-blue-500" : ""
-            }`}
+            className={`block text-sm hover:text-blue-500 p-2 transition-colors ${isActive("/admin") ? "text-blue-500" : ""
+              }`}
             onClick={() => setIsOpen(false)}
           >
             <Button variant="outline" className="w-full flex cursor-pointer">{isLoggedIn ? "Dashboard" : "Login"}</Button>

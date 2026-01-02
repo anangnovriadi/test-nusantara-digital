@@ -20,7 +20,7 @@ const Page = () => {
       if (result.data.access_token) {
         dispatch(setToken(result.data.access_token));
 
-        toast.success('Login berhasil', {
+        toast.success('Login berhasil, redirecting...', {
           duration: 1000,
           onAutoClose: () => {
             router.push(ROUTES.ADMIN.DASHBOARD);
@@ -41,7 +41,7 @@ const Page = () => {
             <div className="bg-sidebar-primary dark:text-white text-primary-foreground flex size-10 items-center justify-center rounded-md mx-auto mb-1">
               <School className="size-6" />
             </div>
-            Manajemen Karyawan
+            PT Nusantara Digital
           </div>
         </a>
         <LoginForm
